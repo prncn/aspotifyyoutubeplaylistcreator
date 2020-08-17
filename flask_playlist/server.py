@@ -22,11 +22,11 @@ YT_API_VERSION = 'v3'
 client_secret = {"web": {
     "client_id": "537402813839-p931d64jegt8tvvrnp4tu02irltht58l.apps.googleusercontent.com",
     "client_secret": "dNuMTyXZaiA4YINeQYXHaphq",
-    "redirect_uris": ["https://aintshitsweet.pythonanywhere.com/oauth2callback"],
+    "redirect_uris": ["https://localhost:8080/oauth2callback"],
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://accounts.google.com/o/oauth2/token",
     "YOUR_API_KEY": "AIzaSyCtjvnhzsdOqwJ6cj-OklVXsBFBqxlfMg8"
-}
+    }
 }
 
 #  Spotify API Authentication
@@ -35,7 +35,7 @@ SP_CLIENT_SECRET = "e349effa6ee3489ba63c56ab59cae285"
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 SPOTIFY_API_URL = "https://api.spotify.com/v1"
-REDIRECT_URI = "https://aintshitsweet.pythonanywhere.com/callback/"
+REDIRECT_URI = "https://localhost:8080/callback/"
 SCOPE = "playlist-modify-public user-top-read user-modify-playback-state streaming user-read-email user-read-playback-state"
 STATE = ""
 SHOW_DIALOG_bool = True
@@ -105,10 +105,10 @@ def external_one():
         YT_API_SERVICE_NAME, YT_API_VERSION, credentials=credentials, cache_discovery=False)
     user_id = create_playlist.get_user_id(spotify=spotify)
 
-    playlist_id = create_playlist.add_song_to_playlist(user_id=user_id, youtube=youtube, spotify=spotify)
+    playlist_id = create_playlist.finalise_playlist(user_id=user_id, youtube=youtube, spotify=spotify)
     session['credentials'] = credentials_to_dict(credentials)
 
-    if not create_playlist.ALL_SONG_INFO:
+    if not create_playlist.TRACKS:
         return redirect('/nonefound')
 
     return redirect('/created')
@@ -174,7 +174,7 @@ def playback_playlist(playlist_id):
 def authorize():
     flow = google_auth_oauthlib.flow.Flow.from_client_config(
         client_config=client_secret, scopes=YT_SCOPES)
-    flow.redirect_uri = 'https://aintshitsweet.pythonanywhere.com/oauth2callback'
+    flow.redirect_uri = client_secret['web']['redirect_uris'][0]
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true')
@@ -190,7 +190,7 @@ def oauth2callback():
 
     flow = google_auth_oauthlib.flow.Flow.from_client_config(
         client_config=client_secret, scopes=YT_SCOPES, state=state)
-    flow.redirect_uri = 'https://aintshitsweet.pythonanywhere.com/oauth2callback'
+    flow.redirect_uri = client_secret['web']['redirect_uris'][0]
     authorization_response = request.url
     flow.fetch_token(authorization_response=authorization_response)
     credentials = flow.credentials
