@@ -52,7 +52,7 @@ auth_query_parameters = {
 }
 
 app.config["SESSION_PERMANENT"] = False
-NO_PROFILE_IMG = 'https://cdn3.iconfinder.com/data/icons/mixed-communication-and-ui-pack-1/48/general_pack_NEW_glyph_profile-512.png'
+NO_PROFILE_IMG = 'https://www.seekpng.com/png/detail/41-410093_circled-user-icon-user-profile-icon-png.png'
 
 
 @app.route('/')
@@ -273,4 +273,4 @@ def random_string():
 
 
 if __name__ == '__main__':
-    app.run('localhost', debug=True, port=8080, ssl_context=('server.crt', 'server.key'), threaded=True)
+    app.run('localhost', debug=True, port=8080, ssl_context='adhoc', threaded=True)
