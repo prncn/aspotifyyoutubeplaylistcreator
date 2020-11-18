@@ -10,12 +10,14 @@ import json
 from urllib.parse import quote
 import random
 import string
+import os
 
 app = Flask(__name__)
 app.secret_key = 'yvibahfm'
 executed = False
 
 # Google API Authentication
+os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 YT_SCOPES = ["https://www.googleapis.com/auth/youtube", "https://www.googleapis.com/auth/youtube.readonly"]
 YT_API_SERVICE_NAME = 'youtube'
 YT_API_VERSION = 'v3'
@@ -73,7 +75,7 @@ def created():
 @app.route('/nonefound')
 def nonefound():
     profile_img = get_profile_img()
-    return render_template('fail.html', profile_img=profile_img)
+    return render_template('fail.html', profile_img=profile_img, msg="no recent liked songs.")
 
 
 @app.errorhandler(404)
@@ -140,10 +142,6 @@ def external_two():
                            fgen=gender['female'], npop=popular['niches'], ppop=popular['pops'],
                            topv=topvalues, topn=topnames, toplen=len(topnames),
                            a_names=artist_analysis.URIS, images=artist_analysis.IMAGES, artlen=len(artist_analysis.IMAGES))
-
-
-def str_(prc):
-    return "{:.1f}".format(prc)
 
 
 @app.route('/collection')

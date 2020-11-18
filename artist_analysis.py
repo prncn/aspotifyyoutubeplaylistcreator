@@ -1,7 +1,6 @@
 from __future__ import print_function
 import json
 import requests
-import re
 
 NAMES = []
 URIS = []

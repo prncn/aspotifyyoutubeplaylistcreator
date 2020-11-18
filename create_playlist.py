@@ -3,7 +3,7 @@ import json
 import requests
 import youtube_dl
 import youtube_dl.utils
-youtube_dl.utils.std_headers['User-Agent'] = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
+# youtube_dl.utils.std_headers['User-Agent'] = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
 TRACKS = []
 IMAGES = []
 
@@ -30,6 +30,25 @@ def list_likes(youtube, spotify):
             TRACKS.append(
                 search_track(song_name, artist, spotify)
             )
+
+
+# Workaround since YOUTUBE DL is not supported anymore.
+# Lists raw video titles into TRACKS
+def alt_likes(youtube, spotify):
+    TRACKS.clear()
+    IMAGES.clear()
+    request = youtube.videos().list(
+        part="snippet,contentDetails,statistics",
+        myRating="like",
+        maxResults=5
+    )
+    response = request.execute()
+
+    for item in response['items']:
+        title = item['snippet']['title'].partition("(")[0]
+        TRACKS.append(
+            alt_search(title, spotify)
+        )
 
 
 # Create empty Spotify playlist
@@ -70,6 +89,41 @@ def search_track(song_name, artist, spotify):
     response_json = response.json()
     songs = response_json['tracks']['items']
 
+    if len(songs) == 0:
+        uri = 'HKMfOA7SBN7XqV4fiTnvK'
+    else:
+        uri = songs[0]['uri']
+        img_resp = requests.get(
+            "https://api.spotify.com/v1/tracks/{}".format(songs[0]['id']),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(spotify)
+            }
+        )
+        img_json = img_resp.json()
+        IMAGES.append(img_json['album']['images'][0]['url'])
+
+    return uri
+
+
+# Search spotify with the YouTube track as query and add album cover to IMAGES.
+# Alternative version to accommodate raw Youtube titles
+# Return Spotify URI
+def alt_search(title, spotify):
+    query = "https://api.spotify.com/v1/search?q={}&type=track".format(title)
+    response = requests.get(
+        query,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {}".format(spotify)
+        }
+    )
+    response_json = response.json()
+    print(response_json)
+    if 'tracks' not in response_json:
+        return None
+
+    songs = response_json['tracks']['items']
     if len(songs) == 0:
         uri = 'HKMfOA7SBN7XqV4fiTnvK'
     else:
@@ -138,8 +192,11 @@ def get_profile_img(spotify):
 
 # Wrapper function to add all tracks to the empty playlist
 def finalise_playlist(user_id, youtube, spotify):
-    list_likes(youtube, spotify)
+    alt_likes(youtube, spotify)
     uris = TRACKS
+    if not uris:
+        return None
+
     playlist_id = post_empty_playlist(user_id, spotify)
     request_data = json.dumps(uris)
 
