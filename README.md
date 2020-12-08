@@ -23,4 +23,4 @@ thumbnail is played on mouse hover.
 on liked videos. As of now, some videos that should contain song information should be detected while  
 others will not.*
   
-*DEMO:* https://aintshitsweet.pythonanywhere.com/
+*DEMO:* (offline)
